@@ -1,0 +1,44 @@
+<launch>
+  <!-- ROSCORE -->
+  <master auto="start"/>
+
+  <!-- CAN Bus -->
+  <!--<include file="$(find can_launch)/can_launch.launch" />-->
+
+  <!-- Camera(s) -->
+  <include file="$(find pointgrey_camera_driver)/launch/autodrive.launch" />
+
+  <!-- GPS -->
+  <include file="$(find novatel_gps)/launch/novatel_gps.launch" />
+  <node pkg="bolt" type="gps_converter.py" name="gps_converter" output="screen" />
+
+  <!-- LiDAR -->
+  <node pkg="tf" type="static_transform_publisher" name="baselink_velodyne_tf_broadcaster" args="0 0 0 0 0 0 1 base_link velodyne 10" />
+  <node pkg="velodyne_driver" type="velodyne_node" name="velodyne_driver_velodyne_node" args="_model:=VLP16" />
+  <node pkg="velodyne_pointcloud" type="cloud_node" name="velodyne_pointcloud_cloud_node" args="_calibration:=/home/team0/dependency_ws/src/velodyne/velodyne_pointcloud/params/VLP16_hires_db.yaml" />
+  <node pkg="topic_tools" type="relay" name="topic_tools_relay" args="/velodyne_points /points_raw" />
+
+  <!-- Visual Helpers -->
+  <node pkg="bolt_2dnav" type="sphere_waypoint_visuals.py" name="waypoint_visuals_node" />
+
+  <!-- RViz -->
+  <node pkg="rviz" type="rviz" name="rviz_path_planner" output="screen" args="-d /home/team0/catkin_ws/src/bolt_2dnav/cfg/TEBplanner.rviz" />
+ 
+  <!-- Waypoint Planning -->
+  <!--<node pkg="waypoint_planning" type="planner.py" name="waypoint_planning" output="screen" />-->
+
+  <!-- Vehicle Controller -->
+  <!--<node pkg="rqt_reconfigure" type="rqt_reconfigure" name="controller_configure" />-->
+  <!--<node pkg="combined_controller" type="combined_controller_node" name="combined_controller" />-->
+  <node pkg="combined_controller" type="velocity_node" name="velocity_node" />
+
+  <!-- Lane Detection -->
+  <!--<node pkg="lane_detection" type="ros_node.py" name="lane_detection" output="screen" />-->
+  <!--<node pkg="lane_detection" type="ros_node_horizontal.py" name="horizontal_detection" />-->
+
+  <!-- Obstable Detection -->
+  <node pkg="obstacle_detection" type="obstacle_detection" name="obstacle_detection" output="screen"/>
+
+  <!-- Sign Detection -->
+  <!-- <node pkg="stop_signs" type="main" name="sign_detection" /> -->
+</launch>
